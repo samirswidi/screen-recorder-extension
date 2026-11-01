@@ -1,0 +1,54 @@
+{
+  "name": "Screen Recorder - Professional Screen Recording",
+  "short_name": "Screen Recorder",
+  "description": "Professional screen recording for Chrome. Record screen, windows, or tabs with MP4 support, auto-minimize, and invisible recording. Perfect for tutorials, presentations, and demos.",
+  "version": "1.5.0",
+  "manifest_version": 3,
+  "permissions": [
+    "desktopCapture",
+    "downloads",
+    "storage",
+    "offscreen"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_icon": {
+      "16": "icon.svg",
+      "32": "icon.svg",
+      "48": "icon.svg",
+      "128": "icon.svg"
+    },
+    "default_title": "Screen Recorder - Start Recording"
+  },
+  "commands": {
+    "stop-recording": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+S",
+        "mac": "Command+Shift+S"
+      },
+      "description": "Stop screen recording"
+    }
+  },
+  "icons": {
+    "16": "icon.svg",
+    "32": "icon.svg",
+    "48": "icon.svg",
+    "128": "icon.svg"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; base-uri 'self';"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "highlighter.js"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ]
+}

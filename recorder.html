@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <title>Screen Recorder</title>
+  <style>
+    :root {
+      --bg: #0b0d14;
+      --card: rgba(20, 24, 36, 0.9);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --text: #f5f7fa;
+      --muted: #8b95a7;
+      --accent: #7c5cff;
+      --danger: #ff4d6d;
+      --success: #2dd4a4;
+      --radius: 20px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 380px;
+      height: 600px;
+      overflow: hidden;
+    }
+
+    body {
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      background:
+        radial-gradient(800px 400px at 0% 0%, #2a1f5e 0%, transparent 60%),
+        radial-gradient(700px 400px at 100% 100%, #1a3a4a 0%, transparent 60%),
+        var(--bg);
+      color: var(--text);
+      padding: 16px;
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+      overflow-y: auto;
+    }
+
+    .card {
+      width: 100%;
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 22px;
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, var(--accent), #3dd6c6);
+      font-size: 22px;
+      box-shadow: 0 10px 28px rgba(124, 92, 255, 0.4);
+    }
+
+    h1 {
+      font-size: 19px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .sub {
+      color: var(--muted);
+      font-size: 12.5px;
+    }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin: 16px 0 8px;
+    }
+
+    .options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .option {
+      position: relative;
+    }
+
+    .option input {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .option label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 12px 8px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--card-border);
+      cursor: pointer;
+      font-size: 12.5px;
+      font-weight: 500;
+      text-align: center;
+      transition: all 0.18s ease;
+      min-height: 72px;
+    }
+
+    .option label .icon {
+      font-size: 20px;
+    }
+
+    .option input:checked + label {
+      background: rgba(124, 92, 255, 0.18);
+      border-color: rgba(124, 92, 255, 0.5);
+      color: #fff;
+    }
+
+    .option input:disabled + label {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .coming {
+      font-size: 9px;
+      color: var(--muted);
+      background: rgba(255,255,255,0.08);
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-top: 2px;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 12px 16px;
+      border-radius: 999px;
+      font-size: 13.5px;
+      font-weight: 600;
+      margin: 14px 0 16px;
+      border: 1px solid transparent;
+      transition: all 0.25s ease;
+    }
+
+    .status.idle {
+      background: rgba(45, 212, 164, 0.1);
+      border-color: rgba(45, 212, 164, 0.3);
+      color: var(--success);
+    }
+
+    .status.recording {
+      background: rgba(255, 77, 109, 0.12);
+      border-color: rgba(255, 77, 109, 0.35);
+      color: var(--danger);
+      animation: glow 1.6s ease-in-out infinite;
+    }
+
+    .status .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .status.recording .dot { animation: blink 1s infinite; }
+
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+    @keyframes glow { 0%,100%{box-shadow:0 0 0 0 rgba(255,77,109,0)} 50%{box-shadow:0 0 24px 2px rgba(255,77,109,0.25)} }
+
+    .toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      margin: 14px 0;
+    }
+
+    .toggle-label { font-size: 13.5px; font-weight: 500; }
+    .toggle-hint { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+    .switch { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .switch .track {
+      position: absolute; inset: 0;
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 999px; transition: background 0.2s ease; cursor: pointer;
+    }
+    .switch .thumb {
+      position: absolute; top: 3px; left: 3px;
+      width: 18px; height: 18px; border-radius: 50%;
+      background: #fff; transition: transform 0.2s ease;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+    .switch input:checked + .track { background: linear-gradient(135deg, var(--accent), #5a3fd6); }
+    .switch input:checked + .track .thumb { transform: translateX(20px); }
+
+    .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
+
+    button {
+      height: 52px;
+      border: none; border-radius: 12px;
+      cursor: pointer; font-size: 14px; font-weight: 700; color: #fff;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+    }
+    button:hover:not(:disabled) { transform: translateY(-2px); }
+    button:disabled { opacity: 0.35; cursor: not-allowed; transform: none !important; }
+
+    #rec { background: linear-gradient(135deg, #ff4d6d, #c9184a); box-shadow: 0 10px 28px rgba(255,77,109,0.35); }
+    #stop { background: linear-gradient(135deg, #ff8c42, #e05a1a); box-shadow: 0 10px 28px rgba(255,140,66,0.3); }
+
+    .info {
+      margin-top: 14px; padding: 10px 12px; border-radius: 12px;
+      background: rgba(124, 92, 255, 0.08); border: 1px solid rgba(124, 92, 255, 0.2);
+      color: #c9c2ff; font-size: 11.5px; line-height: 1.5;
+    }
+
+    .credit {
+      margin-top: 14px;
+      text-align: center;
+      font-size: 11.5px;
+      color: var(--muted);
+    }
+
+    .credit a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .credit a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <div class="logo">🎥</div>
+      <div>
+        <h1>Screen Recorder</h1>
+        <div class="sub">Enregistre écran, fenêtre ou onglet</div>
+      </div>
+    </div>
+
+    <div id="status" class="status idle">
+      <span class="dot"></span>
+      <span id="statusText">Prêt à enregistrer</span>
+    </div>
+
+    <div class="section-title">Qu'est-ce que tu veux enregistrer ?</div>
+    <div class="options">
+      <div class="option">
+        <input type="radio" name="recordType" id="rt-screen" value="screen" checked>
+        <label for="rt-screen"><span class="icon">🖥️</span>Écran</label>
+      </div>
+      <div class="option">
+        <input type="radio" name="recordType" id="rt-screen-cam" value="screen+cam">
+        <label for="rt-screen-cam"><span class="icon">🖥️📷</span>Écran + Caméra</label>
+      </div>
+      <div class="option">
+        <input type="radio" name="recordType" id="rt-camera" value="camera">
+        <label for="rt-camera"><span class="icon">📷</span>Caméra</label>
+      </div>
+      <div class="option">
+        <input type="radio" name="recordType" id="rt-tab" value="tab">
+        <label for="rt-tab"><span class="icon">🌐</span>Onglet</label>
+      </div>
+    </div>
+
+    <div class="section-title">Format d'export</div>
+    <div class="options">
+      <div class="option">
+        <input type="radio" name="exportFormat" id="ef-webm" value="webm" checked>
+        <label for="ef-webm"><span class="icon">📦</span>WebM</label>
+      </div>
+      <div class="option">
+        <input type="radio" name="exportFormat" id="ef-mp4" value="mp4">
+        <label for="ef-mp4"><span class="icon">🎬</span>MP4</label>
+      </div>
+    </div>
+
+    <div class="section-title">Enregistrer audio ?</div>
+    <div class="options">
+      <div class="option">
+        <input type="radio" name="audioType" id="at-none" value="none" checked>
+        <label for="at-none"><span class="icon">🔇</span>Aucun</label>
+      </div>
+      <div class="option">
+        <input type="radio" name="audioType" id="at-mic" value="mic">
+        <label for="at-mic"><span class="icon">🎤</span>Microphone</label>
+      </div>
+      <div class="option">
+        <input type="radio" name="audioType" id="at-system-mic" value="system+mic">
+        <label for="at-system-mic"><span class="icon">🔊🎤</span>Système + Mic.</label>
+      </div>
+      <div class="option">
+        <input type="radio" name="audioType" id="at-system" value="system">
+        <label for="at-system"><span class="icon">🔊</span>Système</label>
+      </div>
+    </div>
+
+    <div class="toggle">
+      <div>
+        <div class="toggle-label">Auto-Save</div>
+        <div class="toggle-hint">Arrêt auto quand la fenêtre est focus</div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="autoSaveToggle" checked>
+        <span class="track"><span class="thumb"></span></span>
+      </label>
+    </div>
+
+    <div class="btn-group">
+      <button id="rec">🔴 REC</button>
+      <button id="stop" disabled>⏹ STOP</button>
+    </div>
+
+    <div class="info">
+      <strong>Astuce :</strong> la fenêtre se minimise pendant l'enregistrement. Clique dessus dans la barre des tâches (ou <strong>Ctrl+Shift+S</strong>) pour arrêter.
+    </div>
+
+    <div class="credit">
+      Développé par <a href="https://samirswidi.epizy.com/" target="_blank" rel="noopener noreferrer">Souidi Samir</a> 🌐
+    </div>
+  </div>
+
+  <script src="recorder.js"></script>
+</body>
+</html>
